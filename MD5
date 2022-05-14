@@ -1,6 +1,9 @@
-3dcf7bfc0018af50ee9016eb3e25eb8a *DESCRIPTION
-096baf5af6b2bcc4bc8858a462f8efdb *NAMESPACE
-92740573ccd9cb486081142d12dbba4e *R/cspline.R
+26f97d24e0e9c8ec0fce90d7bc03f35b *DESCRIPTION
+ac427c5d98f80eaf8734358cdedc530e *NAMESPACE
+6287b0662be17ab4d734401f40581e4e *R/cspline.R
+783c6aa7c1dcbfa7619f0db23218ea2b *man/adjust_curve.Rd
+bc046b88a266127ac92db4096f8527ee *man/as_complex.Rd
 2d486a3cb5f99cf0c2ff0d5ce7df0080 *man/as_polygon.Rd
+6c2ba8c83ed26f7d958bfaed73decdd7 *man/complexReplacement.Rd
 11be30240263c4ee6857bb4f8b4c571a *man/grapes-inside-grapes.Rd
-a087ded5d5db0a21af4cbf0edf381980 *man/open_curve.Rd
+1cebe5bb517acce0485b4b499898469d *man/open_curve.Rd

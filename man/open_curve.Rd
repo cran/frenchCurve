@@ -11,11 +11,20 @@
 \usage{
 open_curve(x, y = NULL, n = 100 * length(z), asp = 1, ...)
 
-\method{plot}{curve}(x, y = NULL, type = "l", lty = "solid", ...)
+\method{plot}{curve}(
+  x,
+  y = NULL,
+  type = "l",
+  lty = "solid",
+  xpd = NA,
+  pch = 20,
+  ...,
+  include_points = TRUE
+)
 
-\method{points}{curve}(x, pch = 20, ...)
+\method{points}{curve}(x, pch = 20, xpd = NA, ...)
 
-\method{lines}{curve}(x, ...)
+\method{lines}{curve}(x, xpd = NA, ...)
 
 closed_curve(x, y = NULL, n0 = 100 * length(z0), ...)
 
@@ -30,7 +39,9 @@ bezier_curve(x, y = NULL, n = 500, t = seq(0, 1, length.out = n), ...)
 
 \item{...}{additional arguments currently ignored}
 
-\item{pch, type, lty}{plot arguments or traditional graphics parameters}
+\item{pch, type, lty, xpd}{plot arguments or traditional graphics parameters}
+
+\item{include_points}{logical:should points be included in the plot?}
 
 \item{t}{for Bezier curves, parameter value sequence ranging from 0 to 1}
 }
