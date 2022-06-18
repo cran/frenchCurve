@@ -14,7 +14,7 @@ NULL
 #' @param n,n0 number of points in the interpolating curve
 #' @param t for Bezier curves, parameter value sequence ranging from 0 to 1
 #' @param asp the relative scale for x versus that of y
-#' @param ... additional arguments currently ignored
+#' @param ... additional arguments past on to other methods
 #' @param include_points logical:should points be included in the plot?
 #' @param pch,type,lty,xpd plot arguments or traditional graphics parameters
 #'
@@ -46,7 +46,7 @@ NULL
 #'       col = "purple")
 #'
 #' par(oldPar)
-open_curve <- function(x, y = NULL, n = 100*length(z), asp = 1, ...) {
+open_curve <- function(x, y = NULL, n = 100 * length(z), asp = 1, ...) {
   xy <- xy.coords(x, y, recycle = TRUE)
   stopifnot("Too few points" = length(xy$x) > 1)
   if(length(asp) != 1)
@@ -68,9 +68,9 @@ open_curve <- function(x, y = NULL, n = 100*length(z), asp = 1, ...) {
 
 #' @rdname open_curve
 #' @export
-plot.curve <- function(x, y=NULL, type = "l", lty = "solid", xpd = NA, pch = 20, ...,
-                       include_points = TRUE) {
-  with(x, plot(y ~ x, type = type, lty = lty, xpd = xpd, ...))
+plot.curve <- function(x, y=NULL, type = "l", lty = "solid",
+                       xpd = NA, pch = 20, ..., include_points = TRUE) {
+  with(x, plot(x, y, type = type, lty = lty, xpd = xpd, ...))
   if(include_points) points(x$points, pch = pch, xpd = xpd, ...)
   invisible(x)
 }
@@ -93,16 +93,28 @@ lines.curve <- function(x, xpd = NA, ...) {
 
 #' @rdname open_curve
 #' @export
-closed_curve <- function(x, y = NULL, n0 = 100 * length(z0), ...) {
-  z0 <- with(xy.coords(x, y), complex(real = x, imaginary = y))
-  stopifnot("Too few points" = length(z0) > 1)
+closed_curve <- function (x, y = NULL, n0 = 500 * length(z0), asp = 1, ...) {
+  xy <- xy.coords(x, y, recycle = TRUE)
+  stopifnot("Too few points" = length(xy$x) > 1)
+  if(length(asp) != 1)
+    stop("the aspect ratio must be a single entity")
+  if(!is.numeric(asp))
+    asp <- with(xy,
+                switch(asp,
+                       IQR = IQR(x)/IQR(y),
+                       range = diff(range(x))/diff(range(y)),
+                       stop("invalid aspect ratio specification")))
+  z0 <- with(xy, complex(real = x, imaginary = y * asp))
   z <- c(z0, z0, z0)
   s <- cumsum(c(0, Mod(diff(z))))
-  n <- n0*length(z)
-  ind <- (n/3 - n0/2):(2 * n/3 + n0/2)
+  n <- n0 * 3
+  s0 <- sum(Mod(diff(c(z0))))
+  s1 <- sum(Mod(diff(c(z0, z0))))
+  sout <- seq(0, s[length(s)], length.out = n)
+  ind <- s0 <= sout & sout < s1
   sp <- list(x = spline(s, Re(z), n = n, ...)$y[ind],
-             y = spline(s, Im(z), n = n, ...)$y[ind],
-             points = z0)
+             y = spline(s, Im(z), n = n, ...)$y[ind]/asp,
+             points = xy[c("x", "y")])
   class(sp) <- c("closed_curve", "curve")
   sp
 }
@@ -158,6 +170,41 @@ as_points <- function(x, y = NULL) {
   with(xy.coords(x, y, recycle = TRUE), data.frame(x = x, y = y))
 }
 
+#' Conversion to data frame
+#'
+#' Method function to convert an object inheriting from class \code{"curve"}
+#' to a \code{data.frame}
+#'
+#' @param x An object inheriting from class \code{"curve"}
+#' @param row.names,optional,... as for \code{\link[base]{as.data.frame}}.
+#'
+#' @return A data frame object
+#' @export
+#'
+#' @examples
+#' library(ggplot2)
+#' set.seed(1234)
+#' z <- complex(real = runif(5), imaginary = runif(5))
+#' z <- z[order(Arg(z - mean(z)))]
+#' cz <- closed_curve(z)
+#' oz <- open_curve(z)
+#' ggplot() + geom_path(data = as.data.frame(cz), aes(x,y), colour = "#DF536B") +
+#'     geom_path(data = as.data.frame(oz), aes(x,y), colour = "#2297E6") +
+#'     geom_point(data = as.data.frame(z), aes(x = Re(z), y = Im(z))) +
+#'     geom_segment(data = as.data.frame(z), aes(x = Re(mean(z)),
+#'                                               y = Im(mean(z)),
+#'                                               xend = Re(z),
+#'                                               yend = Im(z)),
+#'                  arrow = arrow(angle=15, length=unit(0.125, "inches")),
+#'                  colour = alpha("grey", 1/2)) +
+#'     theme_bw()
+#'
+as.data.frame.curve <- function(x, row.names = NULL, optional = FALSE, ...) {
+  x <- unclass(x)
+  x$points <- NULL
+  data.frame(x)
+}
+
 #' Check if points lie inside a simple polygon
 #'
 #' @param points a data.frame with components x,y specifying the points
@@ -199,7 +246,7 @@ as_points <- function(x, y = NULL) {
 #' lines(z, col = 4)
 #' points(z, pch=16)
 as_complex <- function(x, y=NULL) {
-  with(grDevices::xy.coords(x, y), complex(real = x, imaginary = y))
+  with(grDevices::xy.coords(x, y, recycle = TRUE), complex(real = x, imaginary = y))
 }
 
 #' Complex vector property replacement functions
@@ -243,44 +290,47 @@ NULL
 #'
 #' A simple interactive device for adjusting a curve. Given a set of points,
 #' the curve is plotted and may then be adjusted interactively by clicking on
-#' any of the points, one at a time, and clicking again in the plot for its
+#' any of the points, one at a time, and clicking again at its intended
 #' new position.
 #'
 #' @param x,y  Any means of specifying points in the plane, as accepted by xy.coords()
-#' @param ... currently ignored
+#' @param ... additional arguments past on to curve()
 #' @param plotit logical: should the curve be plotted (TRUE) or can it be assumed
-#'               the points are already on the graphic (FALSE)?
+#'               the points are already on the display (FALSE)?
 #' @param curve One of the curve type functions of this package
 #' @param ccolour character string: colour for the curve in the plot
-#' @param pcolour character string: colour for the curve in the plot
+#' @param pcolour character string: colour for the points in the plot
 #'
 #' @return The adjusted points which define the adjusted curve
 #' @export
 adjust_curve <- function(x, y = NULL, ..., plotit = TRUE,
-                         curve = open_curve, ccolour = "red", pcolour = "navy") {
+                         curve = open_curve, ccolour = "#DF536B", pcolour = "#2297E6") {
   z <- with(xy.coords(x, y, recycle = TRUE), complex(real = x, imaginary = y))
+  cz <- curve(z, ...)
   if (plotit) {
-    rx <- range(Re(z))
-    ry <- range(Im(z))
     plot.new()
     oldPar <- par(mar = rep(1,4))
     on.exit(par(oldPar))
   }
   repeat {
     if(plotit) {
-      plot(z, asp = 1, xlim = rx, ylim = ry, xpd = NA, pch=20,
+      plot(z, asp = 1,
+           xlim = range(cz$x, Re(z)),
+           ylim = range(cz$y, Im(z)),
+           xpd = NA, pch=20,
            col = pcolour, axes = FALSE, ann = FALSE)
     } else {
-      points(z, col=pcolour,pch=20)
+      points(z, col=pcolour, pch=20)
     }
-    lines(curve(z), col = ccolour, xpd = NA)
+    lines(cz, col = ccolour, xpd = NA)
     k <- identify(z, labels = "", n = 1)
     if(length(k) == 0) break
     m <- locator(1)
     if(length(m) == 0) break
-    points(z, pch=20, col = par("bg"), cex = 2)
-    lines(curve(z), col = par("bg"), lwd = 2)
-    z[k] <- with(m, complex(real= x, imaginary =  y))
+    points(z, pch = 20, col = par("bg"), cex = 2)
+    lines(cz, col = par("bg"), lwd = 2)
+    z[k] <- with(m, complex(real = x, imaginary =  y))
+    cz <- curve(z, ...)
   }
   as_points(z)
 }

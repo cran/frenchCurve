@@ -10,23 +10,23 @@ adjust_curve(
   ...,
   plotit = TRUE,
   curve = open_curve,
-  ccolour = "red",
-  pcolour = "navy"
+  ccolour = "#DF536B",
+  pcolour = "#2297E6"
 )
 }
 \arguments{
 \item{x, y}{Any means of specifying points in the plane, as accepted by xy.coords()}
 
-\item{...}{currently ignored}
+\item{...}{additional arguments past on to curve()}
 
 \item{plotit}{logical: should the curve be plotted (TRUE) or can it be assumed
-the points are already on the graphic (FALSE)?}
+the points are already on the display (FALSE)?}
 
 \item{curve}{One of the curve type functions of this package}
 
 \item{ccolour}{character string: colour for the curve in the plot}
 
-\item{pcolour}{character string: colour for the curve in the plot}
+\item{pcolour}{character string: colour for the points in the plot}
 }
 \value{
 The adjusted points which define the adjusted curve
@@ -34,6 +34,6 @@ The adjusted points which define the adjusted curve
 \description{
 A simple interactive device for adjusting a curve. Given a set of points,
 the curve is plotted and may then be adjusted interactively by clicking on
-any of the points, one at a time, and clicking again in the plot for its
+any of the points, one at a time, and clicking again at its intended
 new position.
 }

@@ -26,7 +26,7 @@ open_curve(x, y = NULL, n = 100 * length(z), asp = 1, ...)
 
 \method{lines}{curve}(x, xpd = NA, ...)
 
-closed_curve(x, y = NULL, n0 = 100 * length(z0), ...)
+closed_curve(x, y = NULL, n0 = 500 * length(z0), asp = 1, ...)
 
 bezier_curve(x, y = NULL, n = 500, t = seq(0, 1, length.out = n), ...)
 }
@@ -37,7 +37,7 @@ bezier_curve(x, y = NULL, n = 500, t = seq(0, 1, length.out = n), ...)
 
 \item{asp}{the relative scale for x versus that of y}
 
-\item{...}{additional arguments currently ignored}
+\item{...}{additional arguments past on to other methods}
 
 \item{pch, type, lty, xpd}{plot arguments or traditional graphics parameters}
 

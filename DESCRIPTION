@@ -1,7 +1,7 @@
 Package: frenchCurve
 Type: Package
 Title: Generate Open or Closed Interpolating Curves
-Version: 0.1.5
+Version: 0.2.0
 Author: Bill Venables
 Maintainer: Bill Venables <Bill.Venables@gmail.com>
 Description: Functions for finding smooth interpolating curves connecting
@@ -12,7 +12,9 @@ Imports: stats, sp
 Depends: graphics, grDevices
 Encoding: UTF-8
 RoxygenNote: 7.2.0
+Suggests: ggplot2, knitr, rmarkdown
+VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2022-05-14 01:27:51 UTC; bill
+Packaged: 2022-06-18 00:18:47 UTC; bill
 Repository: CRAN
-Date/Publication: 2022-05-14 06:40:05 UTC
+Date/Publication: 2022-06-18 06:30:06 UTC
